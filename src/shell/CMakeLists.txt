@@ -1,0 +1,1 @@
+target_sources_ifdef(CONFIG_ZMK_RUNTIME_CONFIG_SHELL app PRIVATE runtime_config_shell.c)

@@ -1,0 +1,8 @@
+if SHELL
+
+config ZMK_RUNTIME_CONFIG_SHELL
+    bool "Runtime configuration shell commands"
+    default y
+    depends on ZMK_RUNTIME_CONFIG
+
+endif

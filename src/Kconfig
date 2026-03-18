@@ -1,0 +1,15 @@
+config ZMK_RUNTIME_CONFIG
+    bool "ZMK Runtime Configuration"
+    depends on SETTINGS
+    default y
+
+if ZMK_RUNTIME_CONFIG
+
+config ZMK_RUNTIME_CONFIG_MAX_PARAMS
+    int "Maximum number of runtime-configurable parameters"
+    default 16
+    range 1 64
+
+endif # ZMK_RUNTIME_CONFIG
+
+rsource "shell/Kconfig"
