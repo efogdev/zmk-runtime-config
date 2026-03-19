@@ -10,6 +10,11 @@ config ZMK_RUNTIME_CONFIG_MAX_PARAMS
     default 24
     range 1 64
 
+config ZMK_RUNTIME_CONFIG_LRU_CACHE_SIZE
+    int "LRU cache size for parameter lookup"
+    default 8
+    range 1 64
+
 endif # ZMK_RUNTIME_CONFIG
 
 rsource "shell/Kconfig"
