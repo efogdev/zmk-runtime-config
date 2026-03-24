@@ -1,5 +1,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
+#include <errno.h>
 #include <zmk_runtime_config/runtime_config.h>
 
 LOG_MODULE_DECLARE(zmk_runtime_config, CONFIG_ZMK_LOG_LEVEL);
@@ -50,7 +51,14 @@ static int cmd_set(const struct shell *sh, size_t argc, char **argv) {
     }
 
     char *endptr;
-    const int32_t val = (int32_t)strtol(argv[2], &endptr, 10);
+    errno = 0;
+    long raw_val = strtol(argv[2], &endptr, 10);
+    if (endptr == argv[2] || *endptr != '\0' || errno == ERANGE
+        || raw_val < INT32_MIN || raw_val > INT32_MAX) {
+        shprint(sh, "Error: invalid value");
+        return -EINVAL;
+    }
+    const int32_t val = (int32_t)raw_val;
     const int rc = zrc_set(argv[1], val);
 
     if (rc == 0) {

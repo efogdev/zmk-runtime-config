@@ -17,6 +17,9 @@ struct zrc_entry {
     int32_t max_val;
 };
 
+BUILD_ASSERT(CONFIG_ZMK_RUNTIME_CONFIG_MAX_PARAMS <= 255,
+             "MAX_PARAMS must fit in uint8_t; reduce CONFIG_ZMK_RUNTIME_CONFIG_MAX_PARAMS");
+
 static struct zrc_entry entries[CONFIG_ZMK_RUNTIME_CONFIG_MAX_PARAMS];
 static uint8_t num_entries = 0;
 static int8_t lru_cache[CONFIG_ZMK_RUNTIME_CONFIG_LRU_CACHE_SIZE];
