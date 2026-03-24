@@ -19,7 +19,6 @@ struct zrc_entry {
 
 static struct zrc_entry entries[CONFIG_ZMK_RUNTIME_CONFIG_MAX_PARAMS];
 static uint8_t num_entries = 0;
-
 static int8_t lru_cache[CONFIG_ZMK_RUNTIME_CONFIG_LRU_CACHE_SIZE];
 static uint8_t lru_len = 0;
 
@@ -27,7 +26,7 @@ static struct zrc_entry *find_entry(const char *key) {
     for (uint8_t i = 0; i < lru_len; i++) {
         if (strcmp(entries[lru_cache[i]].key, key) == 0) {
             if (i != 0) {
-                int8_t idx = lru_cache[i];
+                const int8_t idx = lru_cache[i];
                 memmove(&lru_cache[1], &lru_cache[0], i);
                 lru_cache[0] = idx;
             }
@@ -38,8 +37,8 @@ static struct zrc_entry *find_entry(const char *key) {
     for (uint8_t i = 0; i < num_entries; i++) {
         if (strcmp(entries[i].key, key) == 0) {
             uint8_t evict_pos = lru_len < CONFIG_ZMK_RUNTIME_CONFIG_LRU_CACHE_SIZE
-                                    ? lru_len++
-                                    : CONFIG_ZMK_RUNTIME_CONFIG_LRU_CACHE_SIZE - 1;
+                ? lru_len++
+                : CONFIG_ZMK_RUNTIME_CONFIG_LRU_CACHE_SIZE - 1;
             memmove(&lru_cache[1], &lru_cache[0], evict_pos);
             lru_cache[0] = (int8_t)i;
             return &entries[i];
@@ -49,7 +48,7 @@ static struct zrc_entry *find_entry(const char *key) {
     return NULL;
 }
 
-int zrc_register(const char *key, int32_t default_val, int32_t min_val, int32_t max_val) {
+int zrc_register(const char *key, const int32_t default_val, const int32_t min_val, const int32_t max_val) {
     if (find_entry(key) != NULL) {
         return -EALREADY;
     }
@@ -80,7 +79,7 @@ int32_t zrc_get(const char *key) {
     return e->value;
 }
 
-int zrc_set(const char *key, int32_t value) {
+int zrc_set(const char *key, const int32_t value) {
     struct zrc_entry *e = find_entry(key);
     if (e == NULL) {
         LOG_ERR("Unknown param '%s'", key);
@@ -129,15 +128,15 @@ int zrc_reset(const char *key) {
     return 0;
 }
 
-void zrc_foreach(zrc_foreach_cb_t cb, void *user) {
+void zrc_foreach(const zrc_foreach_cb_t cb, void *user) {
     for (uint8_t i = 0; i < num_entries; i++) {
         cb(entries[i].key, entries[i].value, entries[i].default_val,
            entries[i].min_val, entries[i].max_val, user);
     }
 }
 
-static int zrc_settings_load_cb(const char *name, size_t len,
-                                  settings_read_cb read_cb, void *cb_arg) {
+static int zrc_settings_load_cb(const char *name, const size_t len,
+                                  const settings_read_cb read_cb, void *cb_arg) {
     struct zrc_entry *e = find_entry(name);
     if (e == NULL) {
         LOG_DBG("Ignoring unknown NVS param '%s'", name);
