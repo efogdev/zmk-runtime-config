@@ -29,9 +29,9 @@ static struct zrc_entry *find_entry(const char *key) {
     for (uint8_t i = 0; i < lru_len; i++) {
         if (strcmp(entries[lru_cache[i]].key, key) == 0) {
             if (i != 0) {
-                const int8_t idx = lru_cache[i];
-                memmove(&lru_cache[1], &lru_cache[0], i);
-                lru_cache[0] = idx;
+                const int8_t tmp = lru_cache[0];
+                lru_cache[0] = lru_cache[i];
+                lru_cache[i] = tmp;
             }
             return &entries[lru_cache[0]];
         }

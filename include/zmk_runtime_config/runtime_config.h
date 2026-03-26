@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define ZRC_KEY_MAX_LEN 40
+#define ZRC_KEY_MAX_LEN 32
 
 /**
  * Register a runtime-configurable integer parameter.
