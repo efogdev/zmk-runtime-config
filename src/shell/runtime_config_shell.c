@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
 #include <errno.h>
