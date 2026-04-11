@@ -32,6 +32,11 @@ int32_t zrc_get(const char *key);
 int zrc_set(const char *key, int32_t value);
 
 /**
+ * @return 1 if settings loaded, 0 if not
+ */
+bool zrc_ready();
+
+/**
  * Reset a parameter to its registered default and remove the NVS entry.
  * @return 0 on success, -ENOENT if key unknown.
  */

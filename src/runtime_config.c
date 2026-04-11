@@ -52,6 +52,7 @@ struct zrc_entry {
 
 static struct zrc_entry entries[CONFIG_ZMK_RUNTIME_CONFIG_MAX_PARAMS];
 static uint8_t          num_entries;
+static bool             ready;
 
 /* ------------------------------------------------------------------ */
 /* Robin Hood hash table                                                */
@@ -250,6 +251,10 @@ int zrc_set(const char *key, const int32_t value)
     return rc;
 }
 
+bool zrc_ready() {
+    return ready;
+}
+
 int zrc_reset(const char *key)
 {
     struct zrc_entry *e = find_entry(key);
@@ -309,6 +314,7 @@ static int zrc_settings_load_cb(const char *name, const size_t len,
         LOG_ERR("Failed to read '%s' from NVS (rd=%d)", name, rd);
     }
 
+    ready = true;
     return 0;
 }
 
