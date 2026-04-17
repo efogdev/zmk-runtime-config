@@ -76,13 +76,13 @@ static inline uint32_t fnv1a_32(const char *key)
 }
 
 /* Map hash to slot index — power-of-two table, so a single AND */
-static inline uint32_t ideal_slot(uint32_t hash)
+static inline uint32_t ideal_slot(const uint32_t hash)
 {
     return hash & ZRC_HT_MASK;
 }
 
 /* Probe distance of an entry currently sitting at `slot` */
-static inline uint32_t probe_dist(uint32_t slot, uint32_t hash)
+static inline uint32_t probe_dist(const uint32_t slot, const uint32_t hash)
 {
     return (slot - ideal_slot(hash)) & ZRC_HT_MASK;
 }
@@ -134,7 +134,7 @@ static struct zrc_entry *find_entry(const char *key)
 /* Insertion — Robin Hood with backward-shift on eviction              */
 /* ------------------------------------------------------------------ */
 
-static void ht_insert(const char *key, uint8_t entry_idx)
+static void ht_insert(const char *key, const uint8_t entry_idx)
 {
     const uint32_t hash = fnv1a_32(key);
     uint32_t slot = ideal_slot(hash);
@@ -145,11 +145,8 @@ static void ht_insert(const char *key, uint8_t entry_idx)
      * compute its probe distance without re-hashing on every iteration.
      */
     uint8_t  inserting_idx  = entry_idx;
-    uint32_t inserting_hash = hash;
-
     for (;;) {
-        uint8_t occupant = ht_slots[slot];
-
+        const uint8_t occupant = ht_slots[slot];
         if (occupant == ZRC_HT_EMPTY) {
             ht_slots[slot] = inserting_idx;
             return;
@@ -160,11 +157,10 @@ static void ht_insert(const char *key, uint8_t entry_idx)
          * slot) than us, steal its slot and continue inserting the
          * displaced entry.
          */
-        uint32_t occupant_dist = probe_dist(slot, fnv1a_32(entries[occupant].key));
+        const uint32_t occupant_dist = probe_dist(slot, fnv1a_32(entries[occupant].key));
         if (occupant_dist < dist) {
             ht_slots[slot]  = inserting_idx;
             inserting_idx   = occupant;
-            inserting_hash  = fnv1a_32(entries[occupant].key);
             dist            = occupant_dist;
         }
 
