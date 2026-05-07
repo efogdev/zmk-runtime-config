@@ -1,1 +1,2 @@
 target_sources_ifdef(CONFIG_ZMK_RUNTIME_CONFIG_SHELL app PRIVATE runtime_config_shell.c)
+set_source_files_properties(runtime_config_shell.c PROPERTIES COMPILE_FLAGS "-Os")
