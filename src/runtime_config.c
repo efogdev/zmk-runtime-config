@@ -9,21 +9,6 @@ LOG_MODULE_REGISTER(zmk_runtime_config, CONFIG_ZMK_LOG_LEVEL);
 
 #define ZRC_NVS_PREFIX "rtcfg"
 
-/*
- * Hash table sizing strategy:
- *
- * Robin Hood open addressing with a power-of-two table guarantees O(1)
- * average lookup with very low variance when the load factor stays below
- * 0.75.  For CONFIG_ZMK_RUNTIME_CONFIG_MAX_PARAMS in [30, 100] we pick
- * the next power of two above (max_params / 0.75), giving:
- *
- *   max_params=32  -> table=64   (load ≤ 0.50)
- *   max_params=64  -> table=128  (load ≤ 0.50)
- *   max_params=100 -> table=256  (load ≤ 0.39)
- *
- * The EMPTY sentinel is 0xFF (255).  Entry indices are stored as uint8_t,
- * so CONFIG_ZMK_RUNTIME_CONFIG_MAX_PARAMS must be ≤ 254.
- */
 #define ZRC_HT_CAPACITY_SHIFT \
     ((CONFIG_ZMK_RUNTIME_CONFIG_MAX_PARAMS <= 32)  ? 6 : \
      (CONFIG_ZMK_RUNTIME_CONFIG_MAX_PARAMS <= 64)  ? 7 : \
@@ -31,23 +16,21 @@ LOG_MODULE_REGISTER(zmk_runtime_config, CONFIG_ZMK_LOG_LEVEL);
 
 #define ZRC_HT_CAPACITY  (1u << ZRC_HT_CAPACITY_SHIFT)
 #define ZRC_HT_MASK      (ZRC_HT_CAPACITY - 1u)
-#define ZRC_HT_EMPTY     UINT8_MAX   /* 0xFF — never a valid entry index */
+#define ZRC_HT_EMPTY     UINT8_MAX
 
 BUILD_ASSERT(CONFIG_ZMK_RUNTIME_CONFIG_MAX_PARAMS <= 254,
              "MAX_PARAMS must be ≤ 254 (0xFF is the EMPTY sentinel)");
 BUILD_ASSERT(ZRC_HT_CAPACITY > CONFIG_ZMK_RUNTIME_CONFIG_MAX_PARAMS,
              "Hash table must be larger than the maximum number of params");
 
-/* ------------------------------------------------------------------ */
-/* Entry storage                                                        */
-/* ------------------------------------------------------------------ */
-
+/* key is a pointer to a string literal supplied by zrc_register — never
+ * copied or freed. All callers in-tree pass string literals (flash). */
 struct zrc_entry {
-    char    key[ZRC_KEY_MAX_LEN];
-    int32_t value;
-    int32_t default_val;
-    int32_t min_val;
-    int32_t max_val;
+    const char *key;
+    int32_t     value;
+    int32_t     default_val;
+    int32_t     min_val;
+    int32_t     max_val;
 };
 
 static struct zrc_entry entries[CONFIG_ZMK_RUNTIME_CONFIG_MAX_PARAMS];
@@ -182,6 +165,11 @@ int zrc_register(const char *key,
         ht_init();
     }
 
+    if (strnlen(key, ZRC_KEY_MAX_LEN) >= ZRC_KEY_MAX_LEN) {
+        LOG_ERR("Key '%s' exceeds ZRC_KEY_MAX_LEN (%d)", key, ZRC_KEY_MAX_LEN);
+        return -ENAMETOOLONG;
+    }
+
     if (find_entry(key) != NULL) {
         return -EALREADY;
     }
@@ -194,8 +182,7 @@ int zrc_register(const char *key,
     const uint8_t idx = num_entries++;
     struct zrc_entry *e = &entries[idx];
 
-    strncpy(e->key, key, ZRC_KEY_MAX_LEN - 1);
-    e->key[ZRC_KEY_MAX_LEN - 1] = '\0';
+    e->key         = key;
     e->value       = default_val;
     e->default_val = default_val;
     e->min_val     = min_val;
