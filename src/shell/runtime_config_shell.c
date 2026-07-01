@@ -19,8 +19,8 @@ struct list_ctx {
     uint8_t count;
 };
 
-static void list_cb(const char *key, int32_t value, int32_t default_val,
-                    int32_t min_val, int32_t max_val, void *user) {
+static void list_cb(const char *key, const int32_t value, const int32_t default_val,
+                    const int32_t min_val, const int32_t max_val, void *user) {
     struct list_ctx *ctx = user;
     shprint(ctx->sh, "  %-36s %d  (default: %d, range: [%d, %d])",
             key, value, default_val, min_val, max_val);
@@ -36,16 +36,22 @@ static int cmd_list(const struct shell *sh, size_t argc, char **argv) {
     return 0;
 }
 
-static int cmd_get(const struct shell *sh, size_t argc, char **argv) {
+static int cmd_get(const struct shell *sh, const size_t argc, char **argv) {
     if (argc < 2) {
         shprint(sh, "Usage: rtcfg get <key>");
         return -EINVAL;
     }
+
+    if (!zrc_exists(argv[1])) {
+        shprint(sh, "Error: key does not exist");
+        return -EINVAL;
+    }
+
     shprint(sh, "%s = %d", argv[1], (int)zrc_get(argv[1]));
     return 0;
 }
 
-static int cmd_set(const struct shell *sh, size_t argc, char **argv) {
+static int cmd_set(const struct shell *sh, const size_t argc, char **argv) {
     if (argc < 3) {
         shprint(sh, "Usage: rtcfg set <key> <value>");
         return -EINVAL;
@@ -53,7 +59,7 @@ static int cmd_set(const struct shell *sh, size_t argc, char **argv) {
 
     char *endptr;
     errno = 0;
-    long raw_val = strtol(argv[2], &endptr, 10);
+    const long raw_val = strtol(argv[2], &endptr, 10);
     if (endptr == argv[2] || *endptr != '\0' || errno == ERANGE
         || raw_val < INT32_MIN || raw_val > INT32_MAX) {
         shprint(sh, "Error: invalid value");
@@ -75,7 +81,7 @@ static int cmd_set(const struct shell *sh, size_t argc, char **argv) {
     return rc;
 }
 
-static int cmd_reset(const struct shell *sh, size_t argc, char **argv) {
+static int cmd_reset(const struct shell *sh, const size_t argc, char **argv) {
     if (argc < 2) {
         shprint(sh, "Usage: rtcfg reset <key>");
         return -EINVAL;

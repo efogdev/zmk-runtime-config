@@ -195,6 +195,11 @@ int zrc_register(const char *key,
     return 0;
 }
 
+bool zrc_exists(const char *key) {
+    const struct zrc_entry *e = find_entry(key);
+    return e != NULL;
+}
+
 int32_t zrc_get(const char *key)
 {
     const struct zrc_entry *e = find_entry(key);

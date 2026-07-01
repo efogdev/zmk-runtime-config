@@ -20,6 +20,11 @@
 int zrc_register(const char *key, int32_t default_val, int32_t min_val, int32_t max_val);
 
 /**
+ * Check if a key is registered.
+ */
+bool zrc_exists(const char *key);
+
+/**
  * Get the current value for a registered parameter.
  * Returns default_val if the key is not registered.
  */
